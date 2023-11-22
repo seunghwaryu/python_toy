@@ -2,8 +2,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import pandas as pd
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+
+file_path = 'D:/Me/뮤지컬 스케줄/%s.xlsx'
 
 # 인터파크에서 전체 일정표 가져오는 함수
 def getScheduleFromWeb(name):
@@ -58,12 +60,22 @@ def getScheduleFromWeb(name):
     return df
 
 # 시트 디자인 설정 함수
-def setExcelStyle(ws):
+def setExcelStyle(ws, need_width):
+    default_width = ws.sheet_format.defaultColWidth # 기본 열의 폭 구하기
+    if not default_width:
+        default_width = 8
+        
+    print(default_width)
     cell_color = 'EBF1DE' # 셀 색깔 
     column_color = '9BBB59' # column 색깔
     set_cell_fill = PatternFill(start_color=cell_color, end_color=cell_color,fill_type='solid')
     set_column_fill = PatternFill(start_color=column_color, end_color=column_color,fill_type='solid')
     box = Border(left=Side(style='thin'),right=Side(style='thin'),top=Side(style='thin'),bottom=Side(style='thin')) # 테두리 지정
+    
+    if(need_width > default_width):
+        for i in range(2,ws.max_column):
+            c = chr(65+i)
+            ws.column_dimensions[c].width = need_width
     
     # 모든 셀에 가운데 정렬 및 테두리 설정
     for r in range(ws.max_row):
@@ -83,18 +95,34 @@ def setExcelStyle(ws):
         for c in range(ws.max_column):
             cell = ws.cell(row=r+1,column=c+1)
             cell.fill = set_cell_fill
-                
-# 일정표를 엑셀파일로 저장하는 함수
-def saveScheduleInExcel(schedule,file_name):
-    wb = Workbook()
-    ws = wb.active
     
+    return ws
+
+def loadExcelfile(file_name):
+    try:
+        wb = load_workbook(file_path %file_name)
+    except:
+        wb = None
+    return wb
+
+# 일정표를 엑셀파일로 저장하는 함수
+def saveScheduleInExcel(schedule, file_name, sheet_name):
+    wb = loadExcelfile(file_name)
+    if not wb:
+        wb = Workbook()
+        wb.remove(wb['Sheet'])
+    
+    wb.create_sheet(sheet_name)
+    ws = wb[sheet_name]
+    
+    need_width = max([len(c) for c in schedule.columns])*2
+        
     for r in dataframe_to_rows(schedule, index=False, header=True):
         ws.append(r)
-    setExcelStyle(ws)
-    wb.save('./%s.xlsx' %file_name)
+    ws = setExcelStyle(ws, need_width)
+    wb.save(file_path %file_name)
 
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 schedule = getScheduleFromWeb(input_name)
-saveScheduleInExcel(schedule,input_name)
+saveScheduleInExcel(schedule,input_name,'전체 스케줄')
