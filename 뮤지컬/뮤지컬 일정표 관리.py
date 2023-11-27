@@ -127,9 +127,16 @@ def saveScheduleInExcel(schedule, file_name, sheet_name):
     ws = setExcelStyle(ws, need_width) # 시트 스타일 설정
     wb.save(file_path %file_name) # 엑셀파일로 저장하기
 
-
-
+# 일정표 필터링 하는 함수
+def fillterSchdeuleByActor(cast_dic, file_name):
+    df = pd.read_excel(FileExistsError %file_name) # 파일 불러오기
+    # 필터링
+    for name, actor in cast_dic.items(): 
+        df = df[df[name] == actor] # 필터링한 데이터프레임을 그대로 다시 저장
+    
+    return df
+    
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 schedule = getScheduleFromWeb(input_name)
-saveScheduleInExcel(schedule,input_name,'전체 스케줄')
+saveScheduleInExcel(schedule,input_name,'전체스케줄')
