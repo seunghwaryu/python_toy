@@ -20,7 +20,7 @@ def getScheduleFromWeb(name):
     # 검색 버튼 클릭
     driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div > div._navi_p92f5_16._autoComplete_p92f5_38 > div > div._biSearch_p92f5_76 > div._wrap_1iig7_1 > div._searchInput_1iig7_16._active_1iig7_33 > button._searchBtn_1iig7_101').click() 
     # 검색해서 나오는 첫번째 공연 클릭
-    driver.find_element(By.CSS_SELECTOR,'#__next > div > main > div > div > div.result-ticket_wrapper__H41_U > div.result-ticket_listWrapper__xcEo3 > div:nth-child(1)').click()
+    driver.find_element(By.CSS_SELECTOR,'#__next > div > main > div > div > div.result-ticket_wrapper__H41_U > div.result-ticket_listWrapper__xcEo3 > a:nth-child(1)').click()
 
     # 현재 창의 핸들을 저장
     main_window = driver.current_window_handle
@@ -108,6 +108,7 @@ def loadExcelfile(file_name):
 
 # 일정표를 엑셀파일로 저장하는 함수
 def saveScheduleInExcel(schedule_df, file_name, sheet_name):
+    # if sheet_name == '전체스케줄' 로 수정하면 될 듯
     wb = loadExcelfile(file_name)
     # file_name과 동일한 파일이 기존에 없다면 (엑셀파일을 불러오는데 실패했다면)
     if not wb:
@@ -129,7 +130,7 @@ def saveScheduleInExcel(schedule_df, file_name, sheet_name):
 # 원하는 배역:배우 입력받는 함수
 def inputCast():
     cast_dict = dict()
-    print('원하는 배우와 그 배우의 배역명을 입력해주세요. 입력 종료를 원하면 0을 입력해주세요. ex) 장발장 민우혁')
+    print('\n원하는 배우와 그 배우의 배역명을 입력해주세요. 입력 종료를 원하면 0을 입력해주세요. ex) 장발장 민우혁')
     while True:
         cast = input('입력: ').split()
         if(cast[0] == '0'):
@@ -149,10 +150,25 @@ def fillterSchdeuleByActor(cast_dict, file_name):
     
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
-# schedule = getScheduleFromWeb(input_name)
-# saveScheduleInExcel(schedule,input_name,'전체스케줄')
+choice = int(input('1.할인정보 2.일정표: '))
 
-cast_dict = inputCast()
-filtering_schedule_df = fillterSchdeuleByActor(cast_dict, input_name)
-sheet_name = ','.join(list(cast_dict.values()))
-saveScheduleInExcel(filtering_schedule_df,input_name,sheet_name)
+if(choice == 1):
+    pass
+elif(choice == 2):
+    schedule_wb = loadExcelfile(input_name)
+    
+    # 입력받은 공연명과 이름이 동이한 엑셀파일이 존재하지 않다면
+    if not schedule_wb:
+        schedule_df = getScheduleFromWeb(input_name)
+        saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
+    
+    # 캐스트 입력받기
+    cast_dict = inputCast()
+    cast_dict = dict(sorted(cast_dict.items(),key= lambda item:item[1])) # 배우 이름 순으로 정렬
+    
+    # 필터링하기
+    filtered_schedule_df = fillterSchdeuleByActor(cast_dict, input_name)
+    
+    # 필터링한 일정표 엑셀로 저장
+    sheet_name = ','.join(list(cast_dict.values())) # 시트 이름 배우들 이름으로 설정
+    saveScheduleInExcel(filtered_schedule_df,input_name,sheet_name)
