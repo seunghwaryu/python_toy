@@ -99,12 +99,14 @@ def setExcelStyle(ws, need_width):
 
 # 엑셀파일 불러오는 함수
 def loadExcelfile(file_name):
-    # file_name과 동일한 이름의 파일이 있으면 그 파일을 반환하고 아니면 None를 반환한다.
+    # file_name과 동일한 이름의 파일이 있으면 그 파일을 불러와 데이터프레임으로 변환한 것을 반환
+    # 파일이 없으면 빈 데이터프레임을 반환한다.
+    # 메인함수에서의 활용을 위해 pandas로 불러온다.
     try:
-        wb = load_workbook(file_path %file_name)
+        df = pd.read_excel(file_path %file_name)
     except:
-        wb = None
-    return wb
+        df = pd.DataFrame()
+    return df
 
 # 일정표를 엑셀파일로 저장하는 함수
 def saveScheduleInExcel(schedule_df, file_name, sheet_name):
@@ -113,7 +115,7 @@ def saveScheduleInExcel(schedule_df, file_name, sheet_name):
         wb = Workbook() 
         wb.remove(wb['Sheet'])
     else:
-        wb = load_workbook(file_name)
+        wb = load_workbook(file_path %file_name)
         
     wb.create_sheet(sheet_name) # 새로운 시트 생성
     ws = wb[sheet_name] # 앞으로 다루는 시트를 앞서 생성한 시트로 설정
@@ -128,14 +130,19 @@ def saveScheduleInExcel(schedule_df, file_name, sheet_name):
     wb.save(file_path %file_name) # 엑셀파일로 저장하기
 
 # 원하는 배역:배우 입력받는 함수
-def inputCast():
+def inputCast(cast_list):
     cast_dict = dict()
     print('\n원하는 배우와 그 배우의 배역명을 입력해주세요. 입력 종료를 원하면 0을 입력해주세요. ex) 장발장 민우혁')
+    print("배역명 목록: ",end='')
+    print(*cast_list,sep=', ')
+    print('-' * 100)
+    
     while True:
         cast = input('입력: ').split()
         if(cast[0] == '0'):
             break
-        cast_dict[cast[0]] = cast[1]
+        cast_name = ' '.join(cast[:-1:])
+        cast_dict[cast_name] = cast[-1]
     
     return cast_dict
 
@@ -155,15 +162,16 @@ choice = int(input('1.할인정보 2.일정표: '))
 if(choice == 1):
     pass
 elif(choice == 2):
-    schedule_wb = loadExcelfile(input_name)
+    schedule_df = loadExcelfile(input_name)
     
-    # 입력받은 공연명과 이름이 동이한 엑셀파일이 존재하지 않다면
-    if not schedule_wb:
+    # 입력받은 공연명과 이름이 동이한 엑셀파일이 존재 하지않다면
+    if schedule_df.empty:
         schedule_df = getScheduleFromWeb(input_name)
         saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
     
     # 캐스트 입력받기
-    cast_dict = inputCast()
+    cast_list = list(schedule_df.columns[2:])
+    cast_dict = inputCast(cast_list)
     cast_dict = dict(sorted(cast_dict.items(),key= lambda item:item[1])) # 배우 이름 순으로 정렬
     
     # 필터링하기
