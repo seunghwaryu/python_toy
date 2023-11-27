@@ -108,13 +108,13 @@ def loadExcelfile(file_name):
 
 # 일정표를 엑셀파일로 저장하는 함수
 def saveScheduleInExcel(schedule_df, file_name, sheet_name):
-    # if sheet_name == '전체스케줄' 로 수정하면 될 듯
-    wb = loadExcelfile(file_name)
-    # file_name과 동일한 파일이 기존에 없다면 (엑셀파일을 불러오는데 실패했다면)
-    if not wb:
+    # sheet_name이 전체스케줄이라는 것은 현재 파일이 존재하지 않는 것이다.
+    if sheet_name == '전체스케줄':
         wb = Workbook() 
         wb.remove(wb['Sheet'])
-    
+    else:
+        wb = load_workbook(file_name)
+        
     wb.create_sheet(sheet_name) # 새로운 시트 생성
     ws = wb[sheet_name] # 앞으로 다루는 시트를 앞서 생성한 시트로 설정
     
