@@ -127,11 +127,23 @@ def saveScheduleInExcel(schedule, file_name, sheet_name):
     ws = setExcelStyle(ws, need_width) # 시트 스타일 설정
     wb.save(file_path %file_name) # 엑셀파일로 저장하기
 
+# 원하는 배역:배우 입력받는 함수
+def inputCast():
+    cast_dict = dict()
+    print('원하는 배우와 그 배우의 배역명을 입력해주세요. 입력 종료를 원하면 0을 입력해주세요. ex) 장발장 민우혁')
+    while True:
+        cast = input('입력: ').split()
+        if(cast[0] == '0'):
+            break
+        cast_dict[cast[0]] = cast[1]
+    
+    return cast_dict
+
 # 일정표 필터링 하는 함수
-def fillterSchdeuleByActor(cast_dic, file_name):
+def fillterSchdeuleByActor(cast_dict, file_name):
     df = pd.read_excel(FileExistsError %file_name) # 파일 불러오기
     # 필터링
-    for name, actor in cast_dic.items(): 
+    for name, actor in cast_dict.items(): 
         df = df[df[name] == actor] # 필터링한 데이터프레임을 그대로 다시 저장
     
     return df
