@@ -65,7 +65,6 @@ def setExcelStyle(ws, need_width):
     if not default_width:
         default_width = 8
         
-    print(default_width)
     cell_color = 'EBF1DE' # 셀 색깔 
     column_color = '9BBB59' # column 색깔
     set_cell_fill = PatternFill(start_color=cell_color, end_color=cell_color,fill_type='solid')
@@ -108,7 +107,7 @@ def loadExcelfile(file_name):
     return wb
 
 # 일정표를 엑셀파일로 저장하는 함수
-def saveScheduleInExcel(schedule, file_name, sheet_name):
+def saveScheduleInExcel(schedule_df, file_name, sheet_name):
     wb = loadExcelfile(file_name)
     # file_name과 동일한 파일이 기존에 없다면 (엑셀파일을 불러오는데 실패했다면)
     if not wb:
@@ -118,10 +117,10 @@ def saveScheduleInExcel(schedule, file_name, sheet_name):
     wb.create_sheet(sheet_name) # 새로운 시트 생성
     ws = wb[sheet_name] # 앞으로 다루는 시트를 앞서 생성한 시트로 설정
     
-    need_width = max([len(c) for c in schedule.columns])*2 # columns의 최대글자수에 폭을 맞추기 위한 너비 
+    need_width = max([len(c) for c in schedule_df.columns])*2 # columns의 최대글자수에 폭을 맞추기 위한 너비 
     
     # 시트에 일정표 데이터 추가    
-    for r in dataframe_to_rows(schedule, index=False, header=True):
+    for r in dataframe_to_rows(schedule_df, index=False, header=True):
         ws.append(r)
         
     ws = setExcelStyle(ws, need_width) # 시트 스타일 설정
@@ -141,7 +140,7 @@ def inputCast():
 
 # 일정표 필터링 하는 함수
 def fillterSchdeuleByActor(cast_dict, file_name):
-    df = pd.read_excel(FileExistsError %file_name) # 파일 불러오기
+    df = pd.read_excel(file_path %file_name) # 파일 불러오기
     # 필터링
     for name, actor in cast_dict.items(): 
         df = df[df[name] == actor] # 필터링한 데이터프레임을 그대로 다시 저장
@@ -150,5 +149,10 @@ def fillterSchdeuleByActor(cast_dict, file_name):
     
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
-schedule = getScheduleFromWeb(input_name)
-saveScheduleInExcel(schedule,input_name,'전체스케줄')
+# schedule = getScheduleFromWeb(input_name)
+# saveScheduleInExcel(schedule,input_name,'전체스케줄')
+
+cast_dict = inputCast()
+filtering_schedule_df = fillterSchdeuleByActor(cast_dict, input_name)
+sheet_name = ','.join(list(cast_dict.values()))
+saveScheduleInExcel(filtering_schedule_df,input_name,sheet_name)
