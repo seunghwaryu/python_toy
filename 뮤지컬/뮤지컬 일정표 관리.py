@@ -98,7 +98,9 @@ def setExcelStyle(ws, need_width):
     
     return ws
 
+# 엑셀파일 불러오는 함수
 def loadExcelfile(file_name):
+    # file_name과 동일한 이름의 파일이 있으면 그 파일을 반환하고 아니면 None를 반환한다.
     try:
         wb = load_workbook(file_path %file_name)
     except:
@@ -108,19 +110,24 @@ def loadExcelfile(file_name):
 # 일정표를 엑셀파일로 저장하는 함수
 def saveScheduleInExcel(schedule, file_name, sheet_name):
     wb = loadExcelfile(file_name)
+    # file_name과 동일한 파일이 기존에 없다면 (엑셀파일을 불러오는데 실패했다면)
     if not wb:
-        wb = Workbook()
+        wb = Workbook() 
         wb.remove(wb['Sheet'])
     
-    wb.create_sheet(sheet_name)
-    ws = wb[sheet_name]
+    wb.create_sheet(sheet_name) # 새로운 시트 생성
+    ws = wb[sheet_name] # 앞으로 다루는 시트를 앞서 생성한 시트로 설정
     
-    need_width = max([len(c) for c in schedule.columns])*2
-        
+    need_width = max([len(c) for c in schedule.columns])*2 # columns의 최대글자수에 폭을 맞추기 위한 너비 
+    
+    # 시트에 일정표 데이터 추가    
     for r in dataframe_to_rows(schedule, index=False, header=True):
         ws.append(r)
-    ws = setExcelStyle(ws, need_width)
-    wb.save(file_path %file_name)
+        
+    ws = setExcelStyle(ws, need_width) # 시트 스타일 설정
+    wb.save(file_path %file_name) # 엑셀파일로 저장하기
+
+
 
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
