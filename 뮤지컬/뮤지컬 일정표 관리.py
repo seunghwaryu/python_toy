@@ -4,6 +4,7 @@ import pandas as pd
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from datetime import datetime
 
 file_path = 'D:/Me/뮤지컬 스케줄/%s.xlsx'
 
@@ -154,6 +155,29 @@ def fillterSchdeuleByActor(cast_dict, file_name):
         df = df[df[name] == actor] # 필터링한 데이터프레임을 그대로 다시 저장
     
     return df
+
+# 날짜 비교 함수
+def compareDate(str_date):
+    today = datetime.now()
+    last_date = datetime.strptime(str_date,'%m/%d') # 문자열을 datetime 형식으로 바꿔주기
+    
+    # last_date는 년도가 설정되있지 않기에 현재의 월과 last_date의 월을 비교하기 위해 월의 값을 추출
+    # last_date의 년도 설정을 위해 현재 년도 추출
+    now_year = int(today.strftime('%Y'))
+    now_month = int(today.strftime('%m'))
+    date_month = int(last_date.strftime('%m'))
+    
+    # 뮤지컬은 보통 3개월 정도 하기 때문에 현재 10월이고 1월인 일정이 있다면 그 1월은 내년 1월을 뜻하기에 다음과 같이 년도 설정
+    if now_month > 10 and date_month < 3:
+        last_date = last_date.replace(year = now_year + 1)
+    else:
+        last_date = last_date.replace(year = now_year)
+    
+    # 메인에서 활용하기 위해 True와 False를 반환
+    if today > last_date:
+        return True
+    else:
+        return False
     
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
@@ -168,6 +192,14 @@ elif(choice == 2):
     if schedule_df.empty:
         schedule_df = getScheduleFromWeb(input_name)
         saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
+    else:
+        last_date = schedule_df.iloc[-1][0] # 일정표의 마지막 일정의 날짜 가져오기
+        last_date = last_date.split('(')[0] # 요일 정보 삭제
+        
+        # 현재 가지고 있는 일정표의 마지막 날짜가 현재보다 과거라면
+        if compareDate(last_date):
+            schedule_df = getScheduleFromWeb(input_name)
+            saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
     
     # 캐스트 입력받기
     cast_list = list(schedule_df.columns[2:])
