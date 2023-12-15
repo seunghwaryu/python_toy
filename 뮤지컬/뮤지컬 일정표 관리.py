@@ -9,9 +9,8 @@ from datetime import datetime
 # 일정표 파일이 저장될 위치
 file_path = 'D:/Me/뮤지컬 스케줄/%s.xlsx'
 
-# 인터파크에서 전체 일정표 가져오는 함수
-def getScheduleFromWeb(name):
-    
+# 인터파크에서 공연 상품페이지로 들어가는 함수
+def visitInterpark(name):
     driver = webdriver.Chrome()
     driver.get('https://tickets.interpark.com/') # 인터파크 티켓 접속
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
@@ -23,6 +22,7 @@ def getScheduleFromWeb(name):
     driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div > div._navi_p92f5_16._autoComplete_p92f5_38 > div > div._biSearch_p92f5_76 > div._wrap_1iig7_1 > div._searchInput_1iig7_16._active_1iig7_33 > button._searchBtn_1iig7_101').click() 
     # 검색해서 나오는 첫번째 공연 클릭
     driver.find_element(By.CSS_SELECTOR,'#__next > div > main > div > div > div.result-ticket_wrapper__H41_U > div.result-ticket_listWrapper__xcEo3 > a:nth-child(1)').click()
+    # driver.find_element(By.XPATH,'//*[@id="__next"]/div/main/div/div/div[1]/div[2]/a[1]').click()
 
     # 현재 창의 핸들을 저장
     main_window = driver.current_window_handle
@@ -35,13 +35,18 @@ def getScheduleFromWeb(name):
             break
     
     # 여기서부터 공연 상품페이지에서 작업 이루어짐
-    
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     try:
         driver.find_element(By.CSS_SELECTOR,'#popup-prdGuide > div > div.popupFooter > button').click() # 팝업 창 있으면 닫기
     except:
         pass
-
+    
+    return driver
+        
+    
+# 인터파크에서 전체 일정표 가져오는 함수
+def getScheduleFromWeb(name):
+    driver = visitInterpark(name)
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     driver.find_element(By.CSS_SELECTOR,'#productMainBody > nav > div > div > ul > li:nth-child(2) > a').click() # 캐스트정보 클릭
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
