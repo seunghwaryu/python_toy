@@ -194,17 +194,20 @@ def getPriceFromInterpark(name):
     # 가격정보 전체 얻기
     tbody = driver.find_element(By.CSS_SELECTOR,'#popup-info-price > div > div.popupBody > div > div > table > tbody')
     rows = tbody.find_elements(By.TAG_NAME,'tr') # 표의 열 얻기
+   
     price_list = []
+    # 가격정보 가져와서 2차원 배열로 저장
     for r in rows: 
             values = [e.text for e in r.find_elements(By.TAG_NAME,'td')]
             price_list.append(values)
     driver.close()
-    df = pd.DataFrame(data=price_list)
+    df = pd.DataFrame(data = price_list)
     
+    # 할인명에 따른 가격 정리
     seat = ""
-    price_info = dict()
+    price_info = dict() # {할인명: [[등급,가격]...]], ....}
     for i in range(len(df)):
-        n = df[0][i]
+        n = df[0][i] 
         p = df[1][i]
         op = df[2][i]
         if op: # 정가일 경우
@@ -221,9 +224,9 @@ def getPriceFromInterpark(name):
                 
     discount_list = list(price_info.keys())
     seat_and_price = list(price_info.values())
-    price_info = {'할인명':discount_list}
+    price_info = {'할인명':discount_list} # {할인명: 할인명리스트, vip석: 가격리스트,...}
     
-    # 할인명에 따라 좌석등급별 금액으로 정리하기
+    # 할인명에 따른 좌석등급별 금액으로 정리
     for layer1 in seat_and_price:
         for inp in layer1:
             s = inp[0]
@@ -232,6 +235,7 @@ def getPriceFromInterpark(name):
                 price_info[s].append(p)
             else:
                 price_info[s] = [p]
+                
     df = pd.DataFrame(price_info)
     df['할인명'] = df['할인명'].apply(lambda x: x.split('\n')[0]) # 할인명에 있는 날짜 제거
     df = df.drop_duplicates(ignore_index = True) # 할인명 중복 제거
@@ -243,7 +247,7 @@ input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    pass
+    print(getPriceFromInterpark(input_name)) #테스트 코드
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
     
