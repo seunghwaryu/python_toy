@@ -6,6 +6,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from datetime import datetime
 
+# 일정표 파일이 저장될 위치
 file_path = 'D:/Me/뮤지컬 스케줄/%s.xlsx'
 
 # 인터파크에서 전체 일정표 가져오는 함수
