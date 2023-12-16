@@ -255,8 +255,10 @@ def getPriceFromKT(name):
     content = driver.find_element(By.TAG_NAME,"iframe") 
     driver.switch_to.frame(content)
     
-    driver.find_element(By.XPATH,'/html/body/div/div/div/div[2]/div[1]/div/fieldset/input').send_keys(name) # 검색어 입력
-    driver.find_element(By.CSS_SELECTOR,'#sub-culture > div.form-thumbnail-box > div.category > div > fieldset > button').click() # 검색 버튼 클릭
+    # 검색어 입력
+    driver.find_element(By.XPATH,'/html/body/div/div/div/div[2]/div[1]/div/fieldset/input').send_keys(name) 
+    # 검색 버튼 클릭
+    driver.find_element(By.CSS_SELECTOR,'#sub-culture > div.form-thumbnail-box > div.category > div > fieldset > button').click() 
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
     # 검색 결과가 있으면 가격 정보 가져오고 아니면 None 반환
@@ -265,6 +267,7 @@ def getPriceFromKT(name):
     except:
         driver.close()
         return df
+    driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
     thead = driver.find_element(By.CSS_SELECTOR,'#sub-culture > table > thead') # 표의 열 이름 가져오기
     columns = [c.text for c in thead.find_elements(By.TAG_NAME,'th')] # 표의 열 이름 저장
@@ -298,13 +301,52 @@ def getPriceFromKT(name):
 
     df = pd.DataFrame(price_info)
     return df
+
+def getPriceFromWemake(name):
+    df = None # dataFrame
+    driver = webdriver.Chrome()
+    driver.get('https://ticket.wemakeprice.com/') # 위메프 티켓 접속
+    driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
+    # 검색어 입력
+    driver.find_element(By.CSS_SELECTOR,'#srh-input').send_keys(name) 
+    # 겁색 버튼 클릭
+    driver.find_element(By.CSS_SELECTOR,'#header > div.u-global-width > div.srh-area > form > fieldset > button').click()
+    driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
+    
+    # 검색 결과가 있으면 가격 정보 가져오고 아니면 None 반환
+    try:
+        driver.find_element(By.CSS_SELECTOR,'#prodList > ul > li > a > div.cont-wrap').click()
+    except:
+        driver.close()
+        return df
+    driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
+    
+    # 팝업창 있으면 닫기
+    try:
+        driver.find_element(By.CSS_SELECTOR,'#btn_layerpopup_close').click()
+    except:
+        pass
+    
+    # 가격정보 가져오기
+    tbody = driver.find_element(By.CSS_SELECTOR,'#basicPrice')
+    rows = tbody.find_elements(By.CLASS_NAME,'price-n') 
+    price_list = [r.text.split('  ') for r in rows]
+    driver.close()
+    
+    price_info = {'할인명':['위메프']}
+    price_info.update({i[0]:[''.join(i[1].split())] for i in price_list})
+    
+    df = pd.DataFrame(price_info)
+    return df
+
+
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    print(getPriceFromInterpark(input_name)) #테스트 코드
+    print(getPriceFromKT(input_name)) #테스트 코드
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
     
