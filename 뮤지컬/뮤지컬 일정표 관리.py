@@ -205,39 +205,42 @@ def getPriceFromInterpark(name):
     
     # 할인명에 따른 가격 정리
     seat = ""
-    price_info = dict() # {할인명: [[등급,가격]...]], ....}
+    seat_list = []
+    price_info = dict() # {할인명1: {등급:가격}, 할인명2: {등급:가격},....}
     for i in range(len(df)):
-        n = df[0][i] 
+        n = df[0][i].split('\n')[0] 
         p = df[1][i]
         op = df[2][i]
         if op: # 정가일 경우
             seat = n
+            seat_list.append(seat)
             if p in price_info:
-                price_info[p].append([seat,op])
+                price_info[p][seat] = op
             else:
-                price_info[p] = [[seat,op]]
+                price_info[p] = {seat:op}
         else: # 할인가 일 경우
             if n in price_info:
-                price_info[n].append([seat,p])
+                price_info[n][seat] = p
             else:
-                price_info[n] = [[seat,p]]  
+                price_info[n] = {seat:p}  
                 
     discount_list = list(price_info.keys())
     seat_and_price = list(price_info.values())
     price_info = {'할인명':discount_list} # {할인명: 할인명리스트, vip석: 가격리스트,...}
     
+    # 각 좌석 등급에 대한 빈 리스트 초기화
+    for s in seat_list:
+        price_info[s] = []
+    
     # 할인명에 따른 좌석등급별 금액으로 정리
     for layer1 in seat_and_price:
-        for inp in layer1:
-            s = inp[0]
-            p = inp[1]
-            if s in price_info:
-                price_info[s].append(p)
+        for s in seat_list:
+            if s in layer1:
+                price_info[s].append(layer1[s])
             else:
-                price_info[s] = [p]
+                price_info[s].append(0)
                 
     df = pd.DataFrame(price_info)
-    df['할인명'] = df['할인명'].apply(lambda x: x.split('\n')[0]) # 할인명에 있는 날짜 제거
     df = df.drop_duplicates(ignore_index = True) # 할인명 중복 제거
     
     return df
@@ -301,7 +304,7 @@ input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    print(getPriceFromKT(input_name)) #테스트 코드
+    print(getPriceFromInterpark(input_name)) #테스트 코드
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
     
