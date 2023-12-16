@@ -241,13 +241,67 @@ def getPriceFromInterpark(name):
     df = df.drop_duplicates(ignore_index = True) # 할인명 중복 제거
     
     return df
+
+def getPriceFromKT(name):
+    df = None # dataFrame
+    driver = webdriver.Chrome()
+    driver.get('https://membership.kt.com/culture/show/BookingInfo.do') # kt 멤버십 공연 페이지 접속
+    driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
+    
+    # 프레임 이동
+    content = driver.find_element(By.TAG_NAME,"iframe") 
+    driver.switch_to.frame(content)
+    
+    driver.find_element(By.XPATH,'/html/body/div/div/div/div[2]/div[1]/div/fieldset/input').send_keys(name) # 검색어 입력
+    driver.find_element(By.CSS_SELECTOR,'#sub-culture > div.form-thumbnail-box > div.category > div > fieldset > button').click() # 검색 버튼 클릭
+    driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
+    
+    # 검색 결과가 있으면 가격 정보 가져오고 아니면 None 반환
+    try:
+        driver.find_element(By.CSS_SELECTOR,'#sub-culture > div.form-thumbnail-box > div.thumbnail.figcaption.musical-figcaption > ul > li > a').click()
+    except:
+        driver.close()
+        return df
+    
+    thead = driver.find_element(By.CSS_SELECTOR,'#sub-culture > table > thead') # 표의 열 이름 가져오기
+    columns = [c.text for c in thead.find_elements(By.TAG_NAME,'th')] # 표의 열 이름 저장
+    tbody = driver.find_element(By.CSS_SELECTOR,'#sub-culture > table > tbody') # 가격정보 얻기
+    rows = tbody.find_elements(By.TAG_NAME,'tr') # 표의 열 얻기
+    
+    price_list =[]
+    for r in rows: 
+        values = [e.text for e in r.find_elements(By.TAG_NAME,'td')]
+        price_list.append(values)
+        
+    driver.close()
+    df = pd.DataFrame(data = price_list, columns = columns)
+
+    # 할인명을 중복없이 추출하여 저장
+    price_info = {'할인명': list(set(df['가격등급']))}
+
+    # 각 좌석 등급에 대한 빈 리스트 초기화
+    for i in range(len(df)):
+        price_info[df['좌석등급'][i]] = []
+
+    # 할인된 가격을 각 좌석 등급에 맞게 추가
+    for discount_name in price_info['할인명']:
+        for j in range(len(df)):
+            # 현재 가격 등급이 할인명과 같다면 할인가를 해당 좌석 등급에 추가
+            if df['가격등급'][j] == discount_name:
+                price_info[df['좌석등급'][j]].append(df['할인가'][j])
+            else:
+                # 아니면 0을 추가
+                price_info[df['좌석등급'][j]].append(0)
+
+    df = pd.DataFrame(price_info)
+    return df
     
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    print(getPriceFromInterpark(input_name)) #테스트 코드
+    print(getPriceFromKT(input_name)) #테스트 코드
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
     
