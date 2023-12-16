@@ -238,7 +238,7 @@ def getPriceFromInterpark(name):
             if s in layer1:
                 price_info[s].append(layer1[s])
             else:
-                price_info[s].append(0)
+                price_info[s].append('0원')
                 
     df = pd.DataFrame(price_info)
     df = df.drop_duplicates(ignore_index = True) # 할인명 중복 제거
@@ -297,7 +297,7 @@ def getPriceFromKT(name):
                 price_info[df['좌석등급'][j]].append(df['할인가'][j])
             else:
                 # 아니면 0을 추가
-                price_info[df['좌석등급'][j]].append(0)
+                price_info[df['좌석등급'][j]].append('0원')
 
     df = pd.DataFrame(price_info)
     return df
@@ -359,15 +359,43 @@ def getPrice(name):
         df_list.append(temp_df)
 
     df = pd.concat(df_list, ignore_index=True) # 가격정보 하나로 합치기
-    df.fillna(0, inplace=True) 
+    df.fillna('0원', inplace=True) 
+    
+    # 제일 높은 좌석등급을 기준으로 가격 정렬하기 
+    df = df.sort_values(by=df.columns[1], key=lambda x: x.str.replace(',', '').str.replace('원', '').astype(int), ascending=False)
     return df
+
+# 가격정보를 엑셀로 저장하는 함수
+def saveScheduleInExcel(name):
+    file_name = name+'_가격정보'
+    
+    # 파일이 이미 있다면
+    if not loadExcelfile(file_name).empty:
+        answer = input('가격정보 파일이 이미 존재합니다. 갱신을 원하면 Y을 입력해주세요: ' )
+        if answer != 'Y':
+            return
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = '가격정보'  
+    
+    price_df = getPrice(name)
+    
+    # 시트에 가격 데이터 추가    
+    for r in dataframe_to_rows(price_df, index=False, header=True):
+        ws.append(r)
+        
+    ws = setExcelStyle(ws, 12) # 시트 스타일 설정
+    wb.save(file_path %file_name) # 엑셀파일로 저장하기
+    
 
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    print(getPrice(input_name)) #테스트 코드
+    saveScheduleInExcel(input_name)
+    print('가격정보의 0원은 해당하는 할인이 없는 것을 의미합니다.')
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
     
