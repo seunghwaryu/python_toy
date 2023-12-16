@@ -246,7 +246,7 @@ def getPriceFromInterpark(name):
     return df
 
 def getPriceFromKT(name):
-    df = None # dataFrame
+    df = pd.DataFrame()
     driver = webdriver.Chrome()
     driver.get('https://membership.kt.com/culture/show/BookingInfo.do') # kt 멤버십 공연 페이지 접속
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
@@ -261,7 +261,7 @@ def getPriceFromKT(name):
     driver.find_element(By.CSS_SELECTOR,'#sub-culture > div.form-thumbnail-box > div.category > div > fieldset > button').click() 
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
-    # 검색 결과가 있으면 가격 정보 가져오고 아니면 None 반환
+    # 검색 결과가 있으면 가격 정보 가져오고 아니면 빈 dataframe 반환
     try:
         driver.find_element(By.CSS_SELECTOR,'#sub-culture > div.form-thumbnail-box > div.thumbnail.figcaption.musical-figcaption > ul > li > a').click()
     except:
@@ -303,7 +303,7 @@ def getPriceFromKT(name):
     return df
 
 def getPriceFromWemake(name):
-    df = None # dataFrame
+    df = pd.DataFrame()
     driver = webdriver.Chrome()
     driver.get('https://ticket.wemakeprice.com/') # 위메프 티켓 접속
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
@@ -314,7 +314,7 @@ def getPriceFromWemake(name):
     driver.find_element(By.CSS_SELECTOR,'#header > div.u-global-width > div.srh-area > form > fieldset > button').click()
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
-    # 검색 결과가 있으면 가격 정보 가져오고 아니면 None 반환
+    # 검색 결과가 있으면 가격 정보 가져오고 아니면 빈 dataframe 반환
     try:
         driver.find_element(By.CSS_SELECTOR,'#prodList > ul > li > a > div.cont-wrap').click()
     except:
@@ -334,19 +334,40 @@ def getPriceFromWemake(name):
     price_list = [r.text.split('  ') for r in rows]
     driver.close()
     
-    price_info = {'할인명':['위메프']}
+    price_info = {'할인명':['위메프 할인']}
     price_info.update({i[0]:[''.join(i[1].split())] for i in price_list})
     
     df = pd.DataFrame(price_info)
     return df
 
+def getPrice(name):
+    df_list = [] # dataframe 합치기위한 리스트
+    
+    # 각 사이트에서 가격 정보 가져오기
+    temp_df = getPriceFromInterpark(name)
+    temp_df['예매처'] = ['인터파크' for _ in range(len(temp_df))]
+    df_list.append(temp_df)
+
+    temp_df = getPriceFromKT(name)
+    if not temp_df.empty:
+        temp_df['예매처'] = ['KT 멤버십' for _ in range(len(temp_df))]
+        df_list.append(temp_df)
+    
+    temp_df = getPriceFromWemake(name)
+    if not temp_df.empty:
+        temp_df['예매처'] = ['위메프' for _ in range(len(temp_df))]
+        df_list.append(temp_df)
+
+    df = pd.concat(df_list, ignore_index=True) # 가격정보 하나로 합치기
+    df.fillna(0, inplace=True) 
+    return df
 
 # 메인 함수
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    print(getPriceFromKT(input_name)) #테스트 코드
+    print(getPrice(input_name)) #테스트 코드
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
     
