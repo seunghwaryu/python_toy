@@ -394,7 +394,7 @@ if(choice == 1):
     if not loadExcelfile(input_name+'_가격정보').empty:
         answer = input('가격정보 파일이 이미 존재합니다. 갱신을 원하면 Y을 입력해주세요: ' )
     if answer == 'Y':    
-        saveScheduleInExcel(input_name)
+        savePriceInExcel(input_name)
     print('가격정보의 0원은 해당하는 할인이 없는 것을 의미합니다.')
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
