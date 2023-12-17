@@ -6,7 +6,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from datetime import datetime
 
-# 일정표 파일이 저장될 위치
+# 엑셀 파일이 저장될 위치
 file_path = 'D:/Me/뮤지컬 스케줄/%s.xlsx'
 
 # 인터파크에서 공연 상품페이지로 들어가는 함수
@@ -185,7 +185,6 @@ def compareDate(str_date):
     else:
         return False
     
-    
 # 인터파크에서 가격 정보 가져오는 함수
 def getPriceFromInterpark(name):
     driver = visitInterpark(name)
@@ -245,6 +244,7 @@ def getPriceFromInterpark(name):
     
     return df
 
+# KT 멤버십에서 가격 정보 가져오는 함수
 def getPriceFromKT(name):
     df = pd.DataFrame()
     driver = webdriver.Chrome()
@@ -340,6 +340,7 @@ def getPriceFromWemake(name):
     df = pd.DataFrame(price_info)
     return df
 
+# 가격정보 가져오는 함수
 def getPrice(name):
     df_list = [] # dataframe 합치기위한 리스트
     
@@ -366,14 +367,8 @@ def getPrice(name):
     return df
 
 # 가격정보를 엑셀로 저장하는 함수
-def saveScheduleInExcel(name):
+def savePriceInExcel(name):
     file_name = name+'_가격정보'
-    
-    # 파일이 이미 있다면
-    if not loadExcelfile(file_name).empty:
-        answer = input('가격정보 파일이 이미 존재합니다. 갱신을 원하면 Y을 입력해주세요: ' )
-        if answer != 'Y':
-            return
     
     wb = Workbook()
     ws = wb.active
@@ -389,12 +384,17 @@ def saveScheduleInExcel(name):
     wb.save(file_path %file_name) # 엑셀파일로 저장하기
     
 
-# 메인 함수
+# 메인
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
 if(choice == 1):
-    saveScheduleInExcel(input_name)
+    answer = "Y" 
+    # 파일이 이미 있다면
+    if not loadExcelfile(input_name+'_가격정보').empty:
+        answer = input('가격정보 파일이 이미 존재합니다. 갱신을 원하면 Y을 입력해주세요: ' )
+    if answer == 'Y':    
+        saveScheduleInExcel(input_name)
     print('가격정보의 0원은 해당하는 할인이 없는 것을 의미합니다.')
 elif(choice == 2):
     schedule_df = loadExcelfile(input_name)
