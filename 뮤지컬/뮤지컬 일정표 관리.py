@@ -210,6 +210,7 @@ def getPriceFromInterpark(name):
         n = df[0][i].split('\n')[0] 
         p = df[1][i]
         op = df[2][i]
+        
         if op: # 정가일 경우
             seat = n
             seat_list.append(seat)
@@ -232,10 +233,10 @@ def getPriceFromInterpark(name):
         price_info[s] = []
     
     # 할인명에 따른 좌석등급별 금액으로 정리
-    for layer1 in seat_and_price:
+    for arr in seat_and_price:
         for s in seat_list:
-            if s in layer1:
-                price_info[s].append(layer1[s])
+            if s in arr:
+                price_info[s].append(arr[s])
             else:
                 price_info[s].append('0원')
                 
