@@ -5,6 +5,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from datetime import datetime
+import pyautogui
 
 # 엑셀 파일이 저장될 위치
 file_path = 'D:/Me/뮤지컬 스케줄/%s.xlsx'
@@ -16,12 +17,13 @@ def visitInterpark(name):
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
     # 검색창 찾기
-    ele = driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div > div._navi_p92f5_16 > div > div._biSearch_p92f5_76 > div._wrap_1iig7_1 > div > input[type=text]') 
+    ele = driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.GDabBtDh01BTKGQc > div > div > div.eFRFqYToyYg7t4IF > div.FI4lWaRTIr0rIskw > div > input[type=text]') 
     ele.send_keys(name) # 검색어 입력
     # 검색 버튼 클릭
-    driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div > div._navi_p92f5_16._autoComplete_p92f5_38 > div > div._biSearch_p92f5_76 > div._wrap_1iig7_1 > div._searchInput_1iig7_16._active_1iig7_33 > button._searchBtn_1iig7_101').click() 
+    pyautogui.press('enter')
+    #driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.GDabBtDh01BTKGQc > div.xKkbLESYEoke3BjV > div > div.eFRFqYToyYg7t4IF > div.FI4lWaRTIr0rIskw > div > button').click() 
     # 검색해서 나오는 첫번째 공연 클릭
-    driver.find_element(By.CSS_SELECTOR,'#__next > div > main > div > div > div.result-ticket_wrapper__H41_U > div.result-ticket_listWrapper__xcEo3 > a:nth-child(1)').click()
+    driver.find_element(By.CSS_SELECTOR,'#contents > div > div > div.result-ticket_wrapper__H41_U > div.InfiniteList_list__LIsNg.InfiniteList_column-desktop-4__l_V2A.InfiniteList_column-mobile-1__wll_m.InfiniteList_ticket-list__bjNUp > a:nth-child(1)').click()
     # driver.find_element(By.XPATH,'//*[@id="__next"]/div/main/div/div/div[1]/div[2]/a[1]').click()
 
     # 현재 창의 핸들을 저장
@@ -48,7 +50,7 @@ def visitInterpark(name):
 def getScheduleFromWeb(name):
     driver = visitInterpark(name)
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
-    driver.find_element(By.CSS_SELECTOR,'#productMainBody > nav > div > div > ul > li:nth-child(2) > a').click() # 캐스트정보 클릭
+    driver.find_element(By.CSS_SELECTOR,'#productMainBody > nav > ul > li:nth-child(2)').click() # 캐스트정보 클릭
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     tbody = driver.find_element(By.CSS_SELECTOR,'#productMainBody > div > div > div.castingDetailResult > table > tbody') # 일정표 전체 얻기
 
