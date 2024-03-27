@@ -17,13 +17,13 @@ def visitInterpark(name):
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
     # 검색창 찾기
-    ele = driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.GDabBtDh01BTKGQc > div > div > div.eFRFqYToyYg7t4IF > div.FI4lWaRTIr0rIskw > div > input[type=text]') 
+    ele = driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.header_wrap__abfca > div.header_navi__b5313 > div > div.header_biSearch__0c77a > div.search_wrap__370af > div > input[type=text]') 
     ele.send_keys(name) # 검색어 입력
     # 검색 버튼 클릭
     pyautogui.press('enter')
     #driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.GDabBtDh01BTKGQc > div.xKkbLESYEoke3BjV > div > div.eFRFqYToyYg7t4IF > div.FI4lWaRTIr0rIskw > div > button').click() 
     # 검색해서 나오는 첫번째 공연 클릭
-    driver.find_element(By.CSS_SELECTOR,'#contents > div > div > div.result-ticket_wrapper__H41_U > div.InfiniteList_list__LIsNg.InfiniteList_column-desktop-4__l_V2A.InfiniteList_column-mobile-1__wll_m.InfiniteList_ticket-list__bjNUp > a:nth-child(1)').click()
+    driver.find_element(By.CSS_SELECTOR,'#contents > div > div > div.result-ticket_wrapper__.result-ticket_wrapper__H41_U > div.result-ticket_listWrapper__xcEo3.InfiniteList_list__3c511.InfiniteList_column-desktop-4__c6aac.InfiniteList_column-mobile-1__853f7.InfiniteList_ticket-list__dfe68 > a').click()
     # driver.find_element(By.XPATH,'//*[@id="__next"]/div/main/div/div/div[1]/div[2]/a[1]').click()
 
     # 현재 창의 핸들을 저장
