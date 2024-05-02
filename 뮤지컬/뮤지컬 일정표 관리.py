@@ -387,7 +387,7 @@ def savePriceInExcel(name):
     wb.save(file_path %file_name) # 엑셀파일로 저장하기
     
 
-# 메인
+# main
 input_name = input('정보를 검색할 공연명을 입력해주세요: ')
 choice = int(input('1.할인정보 2.일정표: '))
 
@@ -407,22 +407,31 @@ elif(choice == 2):
         schedule_df = getScheduleFromWeb(input_name)
         saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
     else:
-        last_date = schedule_df.iloc[-1][0] # 일정표의 마지막 일정의 날짜 가져오기
-        last_date = last_date.split('(')[0] # 요일 정보 삭제
-        
-        # 현재 가지고 있는 일정표의 마지막 날짜가 현재보다 과거라면
-        if compareDate(last_date):
+        answer = input('일정표 파일이 이미 존재합니다. 갱신을 원하면 Y을 입력해주세요: ' )
+        if(answer == 'Y'):
             schedule_df = getScheduleFromWeb(input_name)
             saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
+        else:
+            last_date = schedule_df.iloc[-1][0] # 일정표의 마지막 일정의 날짜 가져오기
+            last_date = last_date.split('(')[0] # 요일 정보 삭제
+            
+            # 현재 가지고 있는 일정표의 마지막 날짜가 현재보다 과거라면
+            if compareDate(last_date):
+                print("일정표의 정보가 현재 정보가 아님으로 일정표를 다시 가져옵니다.")
+                schedule_df = getScheduleFromWeb(input_name)
+                saveScheduleInExcel(schedule_df,input_name,'전체스케줄')
     
     # 캐스트 입력받기
     cast_list = list(schedule_df.columns[2:])
     cast_dict = inputCast(cast_list)
-    cast_dict = dict(sorted(cast_dict.items(),key= lambda item:item[1])) # 배우 이름 순으로 정렬
     
-    # 필터링하기
-    filtered_schedule_df = fillterSchdeuleByActor(cast_dict, input_name)
-    
-    # 필터링한 일정표 엑셀로 저장
-    sheet_name = ','.join(list(cast_dict.values())) # 시트 이름 배우들 이름으로 설정
-    saveScheduleInExcel(filtered_schedule_df,input_name,sheet_name)
+    # 케스트 입력을 받았다면
+    if(len(cast_dict) != 0):
+        cast_dict = dict(sorted(cast_dict.items(),key= lambda item:item[1])) # 배우 이름 순으로 정렬
+        
+        # 필터링하기
+        filtered_schedule_df = fillterSchdeuleByActor(cast_dict, input_name)
+        
+        # 필터링한 일정표 엑셀로 저장
+        sheet_name = ','.join(list(cast_dict.values())) # 시트 이름 배우들 이름으로 설정
+        saveScheduleInExcel(filtered_schedule_df,input_name,sheet_name)
