@@ -17,7 +17,7 @@ def visitInterpark(name):
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     
     # 검색창 찾기
-    ele = driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.header_wrap__abfca > div.header_navi__b5313 > div > div.header_biSearch__0c77a > div.search_wrap__370af > div > input[type=text]') 
+    ele = driver.find_element(By.CSS_SELECTOR,'#__next > div > header > div.header_wrap__abfca > div > div > div.search_wrap__370af > div > input[type=text]') 
     ele.send_keys(name) # 검색어 입력
     # 검색 버튼 클릭
     pyautogui.press('enter')
