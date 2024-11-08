@@ -39,9 +39,11 @@ def visitInterpark(name):
     # 여기서부터 공연 상품페이지에서 작업 이루어짐
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     try:
-        driver.find_element(By.CSS_SELECTOR,'#popup-prdGuide > div > div.popupFooter > button').click() # 팝업 창 있으면 닫기
-    except:
-        pass
+        # 자바스크립트를 사용해 버튼 클릭
+        close_button = driver.find_element(By.CSS_SELECTOR, '#popup-prdGuide > div > div.popupFooter > button') # 팝업 창 있으면 닫기
+        driver.execute_script("arguments[0].click();", close_button)
+    except Exception as e:
+        print(f"팝업 닫기 실패: {e}")
     
     return driver
         
@@ -50,7 +52,10 @@ def visitInterpark(name):
 def getScheduleFromWeb(name):
     driver = visitInterpark(name)
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
-    driver.find_element(By.CSS_SELECTOR,'#productMainBody > nav > ul > li:nth-child(2)').click() # 캐스트정보 클릭
+   
+    cast_button = driver.find_element(By.CSS_SELECTOR,'#productMainBody > nav > ul > li:nth-child(2) > a') # 캐스트정보 클릭
+    driver.execute_script("arguments[0].click();", cast_button)
+   
     driver.implicitly_wait(time_to_wait=5) # 로드될 때까지 대기
     tbody = driver.find_element(By.CSS_SELECTOR,'#productMainBody > div > div > div.castingDetailResult > table > tbody') # 일정표 전체 얻기
 
